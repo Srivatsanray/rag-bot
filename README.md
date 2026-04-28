@@ -1,13 +1,13 @@
 # RAG Bot (FastAPI + Streamlit)
 
-This is the **production-ready refactor** of [rag-bot-chroma](https://github.com/Zlash65/rag-bot-chroma), introducing a real separation between frontend (UI) and backend (logic) using **Streamlit** and **FastAPI** respectively. This modular architecture helps in scaling, extending, and deploying the bot in real-world environments.
+This working project is to built a citation based RAG Bot. The core idea is to use topic-based chunking with Sparse + Dense retrieval. Experimental with cross-encoder rerank. LLM Output utilized hard coded broad and naive query classification to route use of multi-query + HyDE approach.
 
 ---
 
 ## Installation
 
 ```bash
-git clone https://github.com/Zlash65/rag-bot-fastapi.git
+git clone https://github.com/Srivatsanray/rag-bot/
 cd rag-bot-fastapi
 ```
 
@@ -33,7 +33,7 @@ pip3 install -r requirements.txt
 
 ---
 
-## 🔐 API Keys Required
+## API Keys Required
 
 - **Groq API key** from [console.groq.com](https://console.groq.com/)
 
@@ -66,7 +66,7 @@ streamlit run app.py
 ---
 
 <details>
-  <summary>📁 Project Structure</summary>
+  <summary> Project Structure</summary>
 
 ```bash
 rag-bot-v3/
