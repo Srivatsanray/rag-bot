@@ -23,13 +23,13 @@ client/
 
 ---
 
-## 📦 Installation
+## Installation
 
 1. **Clone the repo**
 
 ```bash
-git clone https://github.com/Zlash65/rag-bot-fastapi.git
-cd rag-bot-fastapi
+git clone https://github.com/Srivatsanray/rag-bot/
+cd rag-bot
 ```
 
 2. **Create a virtual environment (optional)**
@@ -49,7 +49,7 @@ pip3 install -r requirements.txt
 
 ---
 
-## ▶️ Usage
+## Usage
 
 Run the app:
 
