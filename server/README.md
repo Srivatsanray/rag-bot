@@ -22,8 +22,8 @@ server/
 1. **Clone the repo**
 
 ```bash
-git clone
-cd
+git clone https://github.com/Srivatsanray/rag-bot/
+cd rag-bot
 ```
 
 2. **Create a virtual environment (optional)**
@@ -40,12 +40,6 @@ cd server
 
 pip3 install -r requirements.txt
 ```
-
----
-
-## Configuration
-
-Set your API keys in `config/settings.py`:
 
 ---
 
