@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+qdrant_client
+aiofiles
+pymupdf
+pymupdf4llm
+rank_bm25
+sentence_transformers
+groq # LLM API Provider
+dotenv
+python-multipart
