@@ -69,7 +69,7 @@ streamlit run app.py
   <summary> Project Structure</summary>
 
 ```bash
-rag-bot-v3/
+rag-bot/
 ├── client/                         # Streamlit Frontend
 │   ├── app.py                      # Main Streamlit entrypoint
 │   ├── components/                 # UI modules
