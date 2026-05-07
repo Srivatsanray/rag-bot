@@ -13,8 +13,8 @@ from utils.logger import logger
 PLACEHOLDER_PREFIX = "SECTION"
 
 
-CHUNK_TOKEN_SIZE = 400  # target tokens per chunk
-CHUNK_OVERLAP_TOKENS = 50  # overlap between consecutive chunks
+CHUNK_TOKEN_SIZE = 512  # target tokens per chunk
+CHUNK_OVERLAP_TOKENS = 128  # overlap between consecutive chunks
 
 
 def _strip_heading_markdown(text: str) -> str:
@@ -24,7 +24,7 @@ def _strip_heading_markdown(text: str) -> str:
 
 
 def _clean_text(text: str, block_type: str) -> str:
-    # Code blocks: only normalise <br> tags — never collapse spaces (preserves indentation).
+    # Code blocks: convert <br> to new lines.
     if block_type == "code":
         return re.sub(r"<br\s*/?>", "\n", text).strip()
 
@@ -42,6 +42,7 @@ def _clean_text(text: str, block_type: str) -> str:
         # Drop bare page-number lines (e.g. "13", "14")
         if re.match(r"^\d+$", line.strip()):
             continue
+        # Drop bare --- lines
         if re.match(r"^-{3,}$", line.strip()):
             continue
         # Drop bold-wrapped picture artifact lines that leaked through
@@ -122,8 +123,8 @@ def _split_into_chunks(text: str, page: int, topic: str, block_type: str) -> lis
         return []
 
     # approx words per chunk: 4 chars/token * CHUNK_TOKEN_SIZE / avg word length ~5
-    words_per_chunk = CHUNK_TOKEN_SIZE * 4 // 5  # ~240 words
-    overlap_words = CHUNK_OVERLAP_TOKENS * 4 // 5  # ~40 words
+    words_per_chunk = CHUNK_TOKEN_SIZE * 4 // 5  # ~409 words
+    overlap_words = CHUNK_OVERLAP_TOKENS * 4 // 5  # ~103 words
 
     chunks = []
     start = 0
@@ -207,26 +208,10 @@ def _parse_page_markdown(md_text: str, page_number: int) -> list[dict]:
 
     while i < len(lines):
         line = lines[i]
-        stripped = line.strip()
+        stripped = line.strip()  # cleans whitespace
 
         if not stripped:
             i += 1
-            continue
-
-        # Skip inline picture reference lines
-        if re.match(r"^==>\s*picture", stripped, re.IGNORECASE):
-            i += 1
-            continue
-
-        # Skip picture text blocks entirely
-        if re.match(r"^-{3,}\s*Start of picture text", stripped, re.IGNORECASE):
-            while i < len(lines):
-                i += 1
-                if i < len(lines) and re.match(
-                    r"^-{3,}\s*End of picture text", lines[i].strip(), re.IGNORECASE
-                ):
-                    i += 1
-                    break
             continue
 
         # Headings — check h3 before h2 before h1
@@ -267,7 +252,7 @@ def _parse_page_markdown(md_text: str, page_number: int) -> list[dict]:
             table_lines = []
             while i < len(lines):
                 s = lines[i].strip()
-                if s.startswith("|") or re.match(r"^\|[-:]+\|", s):
+                if s.startswith("|"):
                     table_lines.append(s)
                     i += 1
                 else:
@@ -366,6 +351,8 @@ def _get_structure(pdf_path: str) -> list[dict]:
             current_topic = f"{PLACEHOLDER_PREFIX}_{placeholder_count}"
 
         cleaned = _clean_text(block["text"], block["type"])
+
+        # Empty String
         if not cleaned:
             continue
 
@@ -383,7 +370,7 @@ def _get_structure(pdf_path: str) -> list[dict]:
 def load_documents_from_paths(file_paths: list[str]) -> list[dict]:
     docs = []
     for file_path in file_paths:
-        source = os.path.basename(file_path)
+        source = os.path.basename(file_path)  # Name of the pdf file
         blocks = _get_structure(file_path)
 
         for block in blocks:
