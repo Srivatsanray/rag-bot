@@ -1,4 +1,4 @@
-import asyncio
+# import asyncio
 import json
 import uuid
 from pathlib import Path
@@ -32,14 +32,18 @@ qdrant_client = QdrantClient(path=VECTORSTORE_DIRECTORY)
 embedding_model = SentenceTransformer("BAAI/bge-base-en-v1.5")
 cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 
+"""
+# faster alternatives
+embedding_model = SentenceTransformer("BAAI/bge-small-en-v1.5")  # 384 dim, ~3x faster
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")        # 384 dim, ~3x faster
+change embedding dimension to 384
+"""
+
 COLLECTION_NAME = "documents"
 DENSE_VECTOR_NAME = "dense"
 SPARSE_VECTOR_NAME = "sparse"
 EMBEDDING_DIM = 768  # BAAI/bge-base-en-v1.5 output dimension
-# Fallback confidence threshold used by llm_chain_factory.is_low_confidence when
-# ce_score is absent from a chunk. In normal operation the cross-encoder always
-# sets ce_score, so this threshold is a defensive fallback, not the primary signal.
-LOW_CONFIDENCE_THRESHOLD = 0.3
+
 
 # Path where the global BM25 state (IDF table + vocab) is persisted to disk
 # so query-time sparse vectors use the same corpus-calibrated weights as ingest time.
@@ -151,8 +155,8 @@ def _sparse_vector_from_state(state: dict, tokens: list[str]) -> SparseVector:
     len(vocab) — guaranteed outside the real vocab range — so the upsert
     never fails while also avoiding a collision with a real term.
     """
-    vocab: dict = state["vocab"]
-    idf: dict = state["idf"]
+    vocab: dict = state["vocab"]  # term -> idx
+    idf: dict = state["idf"]  # term -> score
     avgdl: float = state["avgdl"]
     k1: float = state["k1"]
     b: float = state["b"]
@@ -302,9 +306,8 @@ def _delete_existing_doc(doc_name: str):
 
 def _ingest_sync(docs: list[dict], docs_by_source: dict[str, list]) -> None:
     """
-    Synchronous core of the ingest pipeline. Runs in a thread pool via
-    asyncio.to_thread so CPU-bound embedding and BM25 work never blocks
-    the event loop.
+    Ingestion pipeline for creating sparse and dense embedding
+    to update/insert in the Qdrant Vector database.
 
     Steps:
       1. Delete stale points for each incoming file.
@@ -375,16 +378,8 @@ def _ingest_sync(docs: list[dict], docs_by_source: dict[str, list]) -> None:
 
 
 async def upsert_vectorstore_from_pdfs(uploaded_files: List[UploadFile]):
-    """
-    Async entry point for the ingest pipeline. File saving is awaited
-    directly since it is already async. PDF parsing and all downstream
-    CPU/IO work is offloaded to a thread pool via asyncio.to_thread.
-    """
-    file_paths = await save_uploaded_file(uploaded_files)
-
-    # load_documents_from_paths is CPU-bound (PDF parsing + chunking).
-    # Run it in a thread pool so it does not block the event loop.
-    docs = await asyncio.to_thread(load_documents_from_paths, file_paths)
+    file_paths = await save_uploaded_file(uploaded_files)  # async, must await
+    docs = load_documents_from_paths(file_paths)  # sync, call directly
 
     if not docs:
         logger.warning("No blocks extracted from uploaded files.")
@@ -395,10 +390,7 @@ async def upsert_vectorstore_from_pdfs(uploaded_files: List[UploadFile]):
         source = doc["metadata"]["source"]
         docs_by_source.setdefault(source, []).append(doc)
 
-    # All remaining ingest work (BM25, embedding, Qdrant upsert) is blocking.
-    # Offload the entire pipeline to a thread pool as a single unit to avoid
-    # repeated thread-pool hand-offs between steps.
-    await asyncio.to_thread(_ingest_sync, docs, docs_by_source)
+    _ingest_sync(docs, docs_by_source)  # sync, call directly
 
 
 def _cross_encoder_rerank(
@@ -440,7 +432,7 @@ def find_similar_chunks(
         raise ValueError("No documents have been uploaded yet.")
 
     candidate_limit = (
-        n_results * 3
+        n_results * 5
     )  # fetch more candidates to give the reranker headroom
 
     # Dense query vector — use BGE instruction prefix with the HyDE hypothetical
@@ -496,4 +488,8 @@ def find_similar_chunks(
     logger.debug(
         f"Hybrid search returned {len(chunks)} candidates, cross-encoder reranked to {len(reranked)}."
     )
+    for i, c in enumerate(reranked):
+        logger.debug(
+            f"  [{i + 1}] ce={c['ce_score']:.3f} | {c['doc_name']} p{c['page_number']} | {c['chunk_text'][:80]}"
+        )
     return reranked
