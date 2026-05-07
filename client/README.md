@@ -14,14 +14,11 @@ client/
 ├── components/
 │   ├── chat.py                 # All chat-related UI: input, history, uploads
 │   ├── sidebar.py              # All sidebar elements: upload, inspect
-│   ├── sidebar.py              # All sidebar elements: upload, inspect
 │   └── inspector.py            # Inspector to test vectorstore responses
 ├── utils/
 │   ├── api.py                  # Server communication
 │   ├── config.py               # API_URL etc.
 │   └── helpers.py              # High-level orchestration (calls to api.py)
-
-
 ```
 
 ---
