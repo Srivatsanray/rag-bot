@@ -2,8 +2,6 @@
 
 This working project is to built a citation based RAG Bot. The core idea is to use overlap fixed-chunking with Sparse + Dense embed with cross-encoder rerank. LLM Output utilized hard coded broad and naive query classification to route use of multi-query + HyDE approach.
 
----
-
 ## Installation
 
 ```bash
@@ -31,8 +29,6 @@ cd ../server
 pip3 install -r requirements.txt
 ```
 
----
-
 ## API Keys Required
 
 - **Groq API key** from [console.groq.com](https://console.groq.com/)
@@ -42,8 +38,6 @@ Create a `.env` file:
 ```env
 GROQ_API_KEY=your-groq-key
 ```
-
----
 
 ## Run the Bot
 
@@ -63,7 +57,7 @@ cd client
 streamlit run app.py
 ```
 
----
+# Project Structure 
 
 ```bash
 rag-bot/
