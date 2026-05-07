@@ -66,7 +66,7 @@ streamlit run app.py
 ---
 
 ```bash
-rag-bot-v3/
+rag-bot/
 ├── client/                         # Streamlit Frontend
 │   ├── app.py                      # Main Streamlit entrypoint
 │   ├── components/                 # UI modules
