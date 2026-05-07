@@ -1,0 +1,22 @@
+[project]
+name = "rag-bot"
+version = "0.1.0"
+description = "Retrieval-Augementated Generation Chatbot with Citation"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "aiofiles>=25.1.0",
+    "dotenv>=0.9.9",
+    "fastapi>=0.136.1",
+    "groq>=1.2.0",
+    "pandas>=3.0.2",
+    "pymupdf>=1.27.2.3",
+    "pymupdf4llm>=1.27.2.3",
+    "python-multipart>=0.0.27",
+    "qdrant-client>=1.17.1",
+    "rank-bm25>=0.2.2",
+    "requests>=2.33.1",
+    "sentence-transformers>=5.4.1",
+    "streamlit>=1.57.0",
+    "uvicorn>=0.46.0",
+]

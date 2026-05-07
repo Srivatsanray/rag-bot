@@ -1,6 +1,6 @@
 # RAG Bot (FastAPI + Streamlit)
 
-This working project is to built a citation based RAG Bot. The core idea is to use topic-based chunking with Sparse + Dense retrieval. Experimental with cross-encoder rerank. LLM Output utilized hard coded broad and naive query classification to route use of multi-query + HyDE approach.
+This working project is to built a citation based RAG Bot. The core idea is to use overlap fixed-chunking with Sparse + Dense embed with cross-encoder rerank. LLM Output utilized hard coded broad and naive query classification to route use of multi-query + HyDE approach.
 
 ---
 
@@ -65,9 +65,6 @@ streamlit run app.py
 
 ---
 
-<details>
-  <summary> Project Structure</summary>
-
 ```bash
 rag-bot-v3/
 ├── client/                         # Streamlit Frontend
@@ -104,7 +101,5 @@ rag-bot-v3/
 ├── README.md
 ├── .gitignore
 ```
-
-</details>
 
 ---

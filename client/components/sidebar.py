@@ -1,5 +1,4 @@
 import streamlit as st
-
 from types import SimpleNamespace
 
 from state.session import is_chat_ready

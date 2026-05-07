@@ -26,8 +26,8 @@ async def health_check():
 async def upload_and_process_pdfs(files: list[UploadFile] = File(...)):
     try:
         logger.info(f"Received {len(files)} file(s) for processing")
-        await upsert_vectorstore_from_pdfs(files)
-        count = await asyncio.to_thread(get_collection_count)
+        await upsert_vectorstore_from_pdfs(files)  # still async — save_uploaded_file inside is async
+        count = get_collection_count()  # sync now, call directly
         return StandardAPIResponse(
             status="success",
             data={"chunks_in_store": count},
@@ -44,7 +44,7 @@ async def upload_and_process_pdfs(files: list[UploadFile] = File(...)):
 @router.get("/vector_store/count", response_model=StandardAPIResponse)
 async def get_vectorstore_count():
     try:
-        count = await asyncio.to_thread(get_collection_count)
+        count = get_collection_count()  # sync now, call directly
         return StandardAPIResponse(status="success", data={"chunk_count": count})
     except Exception as e:
         logger.exception("Error getting collection count")
@@ -57,11 +57,9 @@ async def search_vectorstore(request: SearchQueryRequest):
     # Passes the raw query as both hyde_query and original_query since HyDE is not
     # needed for manual retrieval inspection.
     try:
-        if not await asyncio.to_thread(vectorstore_exists):
+        if not vectorstore_exists():  # sync now, call directly
             raise HTTPException(status_code=400, detail="No documents uploaded yet.")
-        chunks = await asyncio.to_thread(
-            find_similar_chunks, request.query, request.query
-        )
+        chunks = find_similar_chunks(request.query, request.query)  # sync now, call directly
         return StandardAPIResponse(status="success", data=chunks)
     except HTTPException:
         raise
@@ -73,13 +71,13 @@ async def search_vectorstore(request: SearchQueryRequest):
 @router.post("/chat", response_model=StandardAPIResponse)
 async def chat(request: ChatRequest):
     try:
-        if not await asyncio.to_thread(vectorstore_exists):
+        if not vectorstore_exists():  # sync now, call directly
             raise HTTPException(
                 status_code=400,
                 detail="No documents uploaded yet. Please upload a PDF first.",
             )
 
-        result = await generate_answer(request.message)
+        result = await asyncio.to_thread(generate_answer, request.message)  # sync fn, offload to thread
 
         return StandardAPIResponse(
             status="success",
