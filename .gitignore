@@ -23,5 +23,3 @@ wheels/
 # local files
 server/data/
 server/temp/
-server/images/
-client/images/
